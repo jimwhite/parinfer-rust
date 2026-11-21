@@ -1847,7 +1847,7 @@ pub fn smart_mode<'a>(text: &'a str, options: &Options) -> Answer<'a> {
     public_result(process_text(text, options, Mode::Indent, smart))
 }
 
-pub fn process(request: &Request) -> Answer {
+pub fn process(request: &Request) -> Answer<'_> {
     let mut options = request.options.clone();
 
     if let Some(ref prev_text) = request.options.prev_text {

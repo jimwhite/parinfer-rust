@@ -292,7 +292,7 @@ impl WrappedAnswer {
 
     #[inline]
     #[allow(dead_code)]
-    pub fn inner(&self) -> &Answer {
+    pub fn inner(&self) -> &Answer<'_> {
         let ptr = (&self.raw as *const RawAnswer) as *const Answer;
         unsafe { &*ptr }
     }
