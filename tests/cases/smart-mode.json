@@ -865,5 +865,110 @@
       ],
       "out": "{:a {:b (Integer/valueOf (-> \"\"\n                             (.length)))}}"
     }
+  },
+  {
+    "text": "(def foo\n  \"hello\n  bar)",
+    "options": {},
+    "result": {
+      "error": {
+        "name": "unclosed-quote",
+        "lineNo": 1,
+        "x": 2
+      },
+      "text": "(def foo\n  \"hello\n  bar)",
+      "success": false
+    },
+    "source": {
+      "lineNo": 560,
+      "in": [
+        "(def foo\n  \"hello\n  bar)"
+      ],
+      "out": "(def foo\n  \"hello\n  ^ error: unclosed-quote\n  bar)"
+    }
+  },
+  {
+    "text": "(def foo [a b]\n  ; \"my string\nret)",
+    "options": {},
+    "result": {
+      "error": {
+        "name": "quote-danger",
+        "lineNo": 1,
+        "x": 4
+      },
+      "text": "(def foo [a b]\n  ; \"my string\nret)",
+      "success": false
+    },
+    "source": {
+      "lineNo": 572,
+      "in": [
+        "(def foo [a b]\n  ; \"my string\nret)"
+      ],
+      "out": "(def foo [a b]\n  ; \"my string\n    ^ error: quote-danger\nret)"
+    }
+  },
+  {
+    "text": "(def foo [a b]\n  ; \"my multiline\n  ; docstring.\"\nret)",
+    "options": {},
+    "result": {
+      "text": "(def foo [a b])\n  ; \"my multiline\n  ; docstring.\"\nret",
+      "success": true
+    },
+    "source": {
+      "lineNo": 584,
+      "in": [
+        "(def foo [a b]\n  ; \"my multiline\n  ; docstring.\"\nret)"
+      ],
+      "out": "(def foo [a b])\n  ; \"my multiline\n  ; docstring.\"\nret"
+    }
+  },
+  {
+    "text": "\"\"foo\"",
+    "options": {
+      "cursorX": 1,
+      "cursorLine": 0
+    },
+    "result": {
+      "cursorX": 1,
+      "cursorLine": 0,
+      "error": {
+        "name": "unclosed-quote",
+        "lineNo": 0,
+        "x": 5
+      },
+      "text": "\"\"foo\"",
+      "success": false
+    },
+    "source": {
+      "lineNo": 596,
+      "in": [
+        "\"|\"foo\""
+      ],
+      "out": "\"|\"foo\"\n      ^ error: unclosed-quote"
+    }
+  },
+  {
+    "text": "(for [col columns]\n  \"\n  [:div.td {:style \"max-width: 500px;\"}])",
+    "options": {
+      "cursorX": 3,
+      "cursorLine": 1
+    },
+    "result": {
+      "cursorX": 3,
+      "cursorLine": 1,
+      "error": {
+        "name": "quote-danger",
+        "lineNo": 2,
+        "x": 37
+      },
+      "text": "(for [col columns]\n  \"\n  [:div.td {:style \"max-width: 500px;\"}])",
+      "success": false
+    },
+    "source": {
+      "lineNo": 607,
+      "in": [
+        "(for [col columns]\n  \"|\n  [:div.td {:style \"max-width: 500px;\"}])"
+      ],
+      "out": "(for [col columns]\n  \"|\n  [:div.td {:style \"max-width: 500px;\"}])\n                                     ^ error: quote-danger"
+    }
   }
 ]
