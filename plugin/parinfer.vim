@@ -60,23 +60,32 @@ command! ParinferOff let g:parinfer_enabled = 0
 " Common Lisp and Scheme: ignore parens in symbols enclosed by ||
 au BufNewFile,BufRead *.lsp,*.lisp,*.cl,*.L,sbclrc,.sbclrc let b:parinfer_lisp_vline_symbols = 1
 au BufNewFile,BufRead *.scm,*.sld,*.ss,*.rkt let b:parinfer_lisp_vline_symbols = 1
+au FileType lisp let b:parinfer_lisp_vline_symbols = 1
+au FileType scheme,racket let b:parinfer_lisp_vline_symbols = 1
 
 " Common Lisp and Scheme: ignore parens in block comments
 au BufNewFile,BufRead *.lsp,*.lisp,*.cl,*.L,sbclrc,.sbclrc let b:parinfer_lisp_block_comments = 1
 au BufNewFile,BufRead *.scm,*.sld,*.ss,*.rkt let b:parinfer_lisp_block_comments = 1
+au FileType lisp let b:parinfer_lisp_block_comments = 1
+au FileType scheme,racket let b:parinfer_lisp_block_comments = 1
 
 " Scheme (SRFI-62): S-expression comment
 au BufNewFile,BufRead *.scm,*.sld,*.ss,*.rkt let b:parinfer_scheme_sexp_comments = 1
+au FileType scheme,racket let b:parinfer_scheme_sexp_comments = 1
 
 " Comment settings
 au BufNewFile,BufRead *.janet let b:parinfer_comment_char = "#"
+au FileType janet let b:parinfer_comment_char = "#"
 
 " Quote settings
 au BufNewFile,BufRead *.yuck let b:parinfer_string_delimiters = ['"', "'", "`"]
+au FileType yuck let b:parinfer_string_delimiters = ['"', "'", "`"]
 
 " Long strings settings
 au BufNewFile,BufRead *.janet let b:parinfer_janet_long_strings = 1
 au BufNewFile,BufRead *.hy let b:parinfer_hy_bracket_strings = 1
+au FileType janet let b:parinfer_janet_long_strings = 1
+au FileType hy let b:parinfer_hy_bracket_strings = 1
 
 " Logging {{{1
 
@@ -242,9 +251,18 @@ function! s:process_buffer() abort
         call s:log_diff(l:orig_text, l:response['text'])
         let l:lines = split(l:response["text"], "\n", 1)
         let l:changed = filter(range(len(l:lines)), 'l:lines[v:val] !=# l:orig_lines[v:val]')
-        silent! undojoin
         try
+          undojoin
           call setline(l:changed[0]+1, l:lines[l:changed[0]:l:changed[-1]])
+        catch /E790:/ " undojoin is not allowed after undo
+          " Calling setline() after undojoin failed with E790 starts a new
+          " undo branch and re-does the undo, causing a loop (issue #112).
+          " Don't re-apply the correction and update the state tracking so we
+          " are in sync with the buffer contents.
+          let b:parinfer_previous_text = l:orig_text
+          let b:parinfer_last_changedtick = b:changedtick
+          let w:parinfer_previous_cursor = s:get_cursor_position()
+          return
         catch /E5\(23\|78\|65\):/ " not allowed here / not allowed to change text here / not allowed to chnage text or change window
           " If an event doesn't allow us to modify the buffer, that's OK.
           " Usually another event will happen before a redraw.
